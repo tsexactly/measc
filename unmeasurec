@@ -1,0 +1,12 @@
+#!/bin/zsh
+# Removes the time measurement inserted by 'measurec' from a C file.
+# Usage: unmeasurec <file.c>
+
+# Validate the argument.
+if [[ $# -ne 1 || ! -f $1 ]]; then
+    print -u2 "Usage: unmeasurec <file.c>"
+    exit 1
+fi
+
+# Removes every line that ends with '// measurec'.
+sed -i '' '/\/\/ measurec$/d' $1

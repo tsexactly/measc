@@ -1,8 +1,7 @@
 #!/bin/zsh
 # Inserts a time measurment around the lines <from> to <to> (inclusive) of a C file.
 # Usage: measurec <file.c> <from> <to>
-# Note: Every inserted line ends with '// measurec', so the measurement can be removed again with
-# sed -i '' '/\/\/ measurec$/d' <file.c>
+# Note: Every inserted line ends with '// measurec', so 'unmeasurec <file.c>' can remove them again.
 
 # Validate the arguments ('<->' matches any non-negative integer).
 if [[ $# -ne 3 || ! -f $1 || $2 != <-> || $3 != <-> ]] || (( $2 < 1 || $2 > $3 )); then
