@@ -1,0 +1,24 @@
+#!/bin/zsh
+# Inserts a time measurment around the lines <from> to <to> (inclusive) of a C file.
+# Usage: measurec <file.c> <from> <to>
+# Note: Every inserted line ends with '// measurec', so the measurement can be removed again with
+# sed -i '' '/\/\/ measurec$/d' <file.c>
+
+# Validate the arguments ('<->' matches any non-negative integer).
+if [[ $# -ne 3 || ! -f $1 || $2 != <-> || $3 != <-> ]] || (( $2 < 1 || $2 > $3 )); then
+    print -u2 "Usage: measurec <file.c> <from> <to>"
+    exit 1
+fi
+
+# Builds the new file content in a single pass. The awk line numbers refer to the original file,
+# so the inserted includes dont shift the given lines.
+content=$(awk -v from=$2 -v to=$3 '
+    NR == 1    { print "#include <stdio.h> // measurec\n#include <time.h> // measurec" }
+    NR == from { print "struct timespec measurec_start, measurec_end; clock_gettime(CLOCK_MONOTONIC, &measurec_start); // measurec" }
+               { print }
+    NR == to   { printf "clock_gettime(CLOCK_MONOTONIC, &measurec_end); printf(\"[measurec] lines %d-%d: %%.3f us\\n\", (measurec_end.tv_sec - measurec_start.tv_sec) * 1e6 + (measurec_end.tv_nsec - measurec_start.tv_nsec) / 1e3); // measurec\n", from, to }
+    END        { if (NR < to) { print "measurec: the file only has " NR " lines" > "/dev/stderr"; exit 1 } }
+' $1) || exit 1
+
+# Writes into the existing file (instead of replacing it), so permissions and attributes are kept.
+print -r -- $content > $1
