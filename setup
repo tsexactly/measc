@@ -1,0 +1,19 @@
+#!/bin/zsh
+# Links 'measurec' and 'unmeasurec' into a directory on the PATH.
+# Usage: ./setup [directory] (default: /usr/local/bin)
+
+target=${1:-/usr/local/bin}
+repository=${0:A:h}
+
+if [[ ! -d $target || ! -w $target ]]; then
+    print -u2 "setup: '$target' doesn't exist or isn't writeable (try 'sudo ./setup' or './setup ~/.local/bin')"
+    exit 1
+fi
+
+for script in measurec unmeasurec; do
+    ln -sf $repository/$script $target/$script
+    print "Linked $target/$script -> $repository/$script"
+done
+
+# Warn if the commands can't be found by the shell yet.
+(( ${path[(Ie)$target]} )) || print -u2 "Note: '$target' is not on your PATH yet."
