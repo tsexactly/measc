@@ -8,5 +8,8 @@ if [[ $# -ne 1 || ! -f $1 ]]; then
     exit 1
 fi
 
-# Removes every line that ends with '// measurec'.
-sed -i '' '/\/\/ measurec$/d' $1
+# Keeps every line that doesn't end with '// measurec'.
+content=$(awk '!/\/\/ measurec$/' $1) || exit 1
+
+# Writes into the existing file (instead of replacing it), so permissions and attributes are kept.
+print -r -- "$content" > $1
