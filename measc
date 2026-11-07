@@ -1,0 +1,39 @@
+#!/bin/zsh
+# Inserts or removes a time measurement in a C file.
+# Usage: measc -l <from> <to> <file.c>   inserts a measurement around the lines <from> to <to> (inclusive)
+#        measc -r <file.c>               removes the measurement again
+# Note: Every inserted line ends with '// measc', so '-r' only removes these lines.
+
+usage() { print -u2 "Usage: measc -l <from> <to> <file.c> | measc -r <file.c>"; exit 1 }
+
+case $1 in
+    -l)
+        # Validate the arguments ('<->' matches any non-negative integer).
+        [[ $# -eq 4 && $2 == <-> && $3 == <-> && -f $4 ]] && (( $2 >= 1 && $2 <= $3 )) || usage
+        file=$4
+
+        # Builds the new file content in a single pass. The awk line numbers refer to the original file,
+        # so the inserted includes don't shift the given lines.
+        # Note: CLOCK_MONOTONIC_RAW is used, as CLOCK_MONOTONIC only has microsecond resolution on macOS.
+        content=$(awk -v from=$2 -v to=$3 '
+            NR == 1    { print "#include <stdio.h> // measc\n#include <time.h> // measc" }
+            NR == from { print "struct timespec measc_start, measc_end; clock_gettime(CLOCK_MONOTONIC_RAW, &measc_start); // measc" }
+                       { print }
+            NR == to   { printf "clock_gettime(CLOCK_MONOTONIC_RAW, &measc_end); printf(\"[measc] lines %d-%d: %%.3f µs\\n\", (measc_end.tv_sec - measc_start.tv_sec) * 1e6 + (measc_end.tv_nsec - measc_start.tv_nsec) / 1e3); // measc\n", from, to }
+            END        { if (NR < to) { print "measc: the file only has " NR " lines" > "/dev/stderr"; exit 1 } }
+        ' $file) || exit 1
+        ;;
+    -r)
+        [[ $# -eq 2 && -f $2 ]] || usage
+        file=$2
+
+        # Keeps every line that doesn't end with '// measc'.
+        content=$(awk '!/\/\/ measc$/' $file) || exit 1
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+# Writes into the existing file (instead of replacing it), so permissions and attributes are kept.
+print -r -- "$content" > $file

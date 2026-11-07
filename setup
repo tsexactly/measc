@@ -1,7 +1,7 @@
 #!/bin/zsh
-# Links 'measurec' and 'unmeasurec' into a directory on the PATH.
+# Links 'measc' into a directory on the PATH.
 # Usage: ./setup [directory] (default: /usr/local/bin)
-# Note: The scripts are linked, not copied, so changes in this repository apply immediately.
+# Note: The script is linked, not copied, so changes in this repository apply immediately.
 
 target=${1:-/usr/local/bin}
 repository=${0:A:h}
@@ -11,10 +11,8 @@ if [[ ! -d $target || ! -w $target ]]; then
     exit 1
 fi
 
-for script in measurec unmeasurec; do
-    ln -sf $repository/$script $target/$script
-    print "Linked $target/$script -> $repository/$script"
-done
+ln -sf $repository/measc $target/measc
+print "Linked $target/measc -> $repository/measc"
 
-# Warn if the commands can't be found by the shell yet.
+# Warn if the command can't be found by the shell yet.
 (( ${path[(Ie)$target]} )) || print -u2 "Note: '$target' is not on your PATH yet."

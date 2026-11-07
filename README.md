@@ -1,7 +1,7 @@
-# measurec
+# measc
 
-Two small zsh scripts to measure the runtime of a line range in a C file.
-`measurec` inserts the measurement directly into the file, `unmeasurec` removes it again.
+A small zsh script to measure the runtime of a line range in a C file.  
+The measurement is inserted directly into the file and can be removed again afterwards.
 
 ## Setup
 
@@ -11,25 +11,25 @@ Clone the repository, navigate into it and execute:
 ./setup
 ```
 
-This links both scripts into `/usr/local/bin`. Another directory can be passed as argument, e.g. `./setup ~/.local/bin`.
+This links the script into `/usr/local/bin`. Another directory can be passed as argument, e.g. `./setup ~/.local/bin`.
 
 ## Usage
 
 ```bash
-measurec main.c 12 20
+measc -l 12 20 main.c
 ```
 
 Inserts a time measurement around the lines 12 to 20 (inclusive). Compile and run the program as usual, the output looks like this:
 
 ```text
-[measurec] lines 12-20: 6.745 µs
+[measc] lines 12-20: 6.745 µs
 ```
 
 ```bash
-unmeasurec main.c
+measc -r main.c
 ```
 
-Removes the measurement again. Every inserted line ends with `// measurec`, so only these lines are removed.
+Removes the measurement again. Every inserted line ends with `// measc`, so only these lines are removed.
 
 ## Notes
 
