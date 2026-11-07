@@ -1,12 +1,13 @@
 #!/bin/zsh
 # Links 'measurec' and 'unmeasurec' into a directory on the PATH.
 # Usage: ./setup [directory] (default: /usr/local/bin)
+# Note: The scripts are linked, not copied, so changes in this repository apply immediately.
 
 target=${1:-/usr/local/bin}
 repository=${0:A:h}
 
 if [[ ! -d $target || ! -w $target ]]; then
-    print -u2 "setup: '$target' doesn't exist or isn't writeable (try 'sudo ./setup' or './setup ~/.local/bin')"
+    print -u2 "setup: '$target' doesn't exist or isn't writable (try 'sudo ./setup' or './setup ~/.local/bin')"
     exit 1
 fi
 
